@@ -15,9 +15,28 @@ def read_dataset():
 def preprocess(dataset):
     pass
 
+def file_structure(old_dataset):
+    new_dataset = []
+    for joke in old_dataset:
+        value = {}
+        value["joke_id"] = joke['id']
+        if "rating" not in joke:
+            value["funniness"] = 3
+        else:
+            value["funniness"] = joke["rating"]
+        value["weights"] = {} # empty for now
+        value["updates"] = 0
+        value["text"] = joke['body']
+        new_dataset.append(value)
+    return new_dataset
+
 def run():
     import_dataset = read_dataset()
-    print(import_dataset[5])
-    preprocessed = preprocess(import_dataset)
+    # preprocessed = preprocess(import_dataset)
+    new_data = file_structure(import_dataset)
 
+    with open("joke_data.json", "w") as outfile:
+        json.dump(new_data, outfile)
+
+print("Indexing jokes...")
 run()
