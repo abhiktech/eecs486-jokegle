@@ -2,20 +2,25 @@ from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import string
+import re
 
 def preprocess(text):
 
     text = text.lower()
+    text = removeQuotations(text)
     text = word_tokenize(text)
     text = removeStopWords(text)
     text = stemWords(text)
 
+    # Remove any remaining individual punctutation
     text = [token for token in text if not token in string.punctuation]
 
     return text
     
-
-
+def removeQuotations(text):
+    text = text.replace('"', '').replace('\'', '').replace('`', '')
+    return text
+    
 
 def removeStopWords(text):
     stop_words = set(stopwords.words('english'))
@@ -27,21 +32,6 @@ def stemWords(text):
 
     text = [stemmer.stem(w) for w in text]
     return text
-
-def removeEscapes(text):
-    # Sample string with escape characters
-    #my_string = "This is a string with escape characters: \n\t and \""
-    #print(my_string)
-    # Encode the string using 'unicode_escape' encoding
-    #my_encoded_string = my_string.encode('unicode_escape')
-
-    # Decode the encoded string using 'utf-8' encoding
-    #my_decoded_string = my_encoded_string.decode('utf-8')
-
-    # Print the decoded string without escape characters
-    #print(my_decoded_string)
-    pass
-
 
 
 if __name__ == '__main__':

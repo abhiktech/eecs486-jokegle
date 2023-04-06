@@ -5,7 +5,7 @@ import json
 def read_dataset():
     """Imports the datasets from the GitHub repository."""
     dataset = []
-    for fname in ["stupidstuff.json", "wocka.json", "reddit_jokes.json"]:
+    for fname in ["jokes/stupidstuff.json", "jokes/wocka.json"]:
         with open(fname, "r") as file:
             curr_file = json.loads(file.read())
             dataset += curr_file
@@ -17,17 +17,23 @@ def preprocess(dataset):
 
 def file_structure(old_dataset):
     new_dataset = []
+    current_joke_id = 0
     for joke in old_dataset:
         value = {}
-        value["joke_id"] = joke['id']
+        
+        value["joke_id"] = current_joke_id
+        current_joke_id += 1
+
         if "rating" not in joke:
             value["funniness"] = 3
         else:
             value["funniness"] = joke["rating"]
+
         value["weights"] = {} # empty for now
-        value["updates"] = 0
+        value["funniness_updates"] = 1
         value["text"] = joke['body']
         new_dataset.append(value)
+
     return new_dataset
 
 def run():
