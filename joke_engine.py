@@ -23,9 +23,11 @@ class JokeEngineDriver:
 
             query_joke_relevances = self.get_user_feedback(initial_top_jokes)
 
-            # updated_top_jokes = self.get_updated_top_jokes(initial_top_jokes, query_weight, query_joke_relevances)
+            updated_top_jokes = self.get_updated_top_jokes(query_joke_relevances, query_weight)
 
-            # self.display_updated_top_jokes(updated_top_jokes)
+            print("Here are your updated top jokes")
+            print()
+            self.display_updated_top_jokes(updated_top_jokes)
 
             is_running = input("Search for more jokes? yes or no: ") != "no"
 
@@ -155,6 +157,8 @@ class JokeEngineDriver:
         return updated_top_jokes
 
     def display_updated_top_jokes(self, updated_top_jokes):
+        for joke in updated_top_jokes:
+            print(joke["text"])
         return
 
 
