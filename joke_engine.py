@@ -1,5 +1,6 @@
 from preprocess import preprocess
 import json
+import math
 
 class JokeEngineDriver:
 
@@ -33,24 +34,51 @@ class JokeEngineDriver:
         with open("term_idfs.json", "r") as ti_file:
             term_idfs = json.load(ti_file)
         
-        print(inverted_index)
-        print(term_idfs)
-
         return inverted_index, term_idfs
     
+    def get_similarity_and_funniness_weighted_average(self, similarity_score, funniness_score):
+        return similarity_score * 2 + funniness_score
+
+    def get_sorted_jokes(self, query_weights):
+        jokes = self.inverted_index[:]
+
+        for i, joke in enumerate(jokes):
+            similarity_score = 0
+
+            for term, weight in query_weights.items():
+                if term in joke["weights"]:
+                    similarity_score += joke["weights"][term] * weight
+
+            jokes[i]["similarity_score"] = similarity_score
+
+        jokes = sorted(jokes, reverse=True, key=lambda v: self.get_similarity_and_funniness_weighted_average(v["similarity_score"], v["funniness_score"]))
+        
+        return jokes
+
     def get_initial_top_jokes(self, query_tokens):
         initial_top_jokes = None
-        query_weight = {}
-
+        query_weights = {}
         
-
+        # Compute max tf
+        max_tf = 1
+        tfs = {}
         for token in query_tokens:
-            pass
+            tfs[token] = tfs.get(token, 0) + 1
+            max_tf = max(max_tf, tfs[token])
 
-        
+        N = len(self.inverted_index)
 
+        # Compute query term weights
+        for token in query_tokens:
+            if token in self.term_idfs:
+                idf = self.term_idfs[token]
+            else:
+                idf = math.log(N, 2)
+            query_weights[token] = (0.5 + (0.5 * tfs[token]) / max_tf) * idf
 
-        return initial_top_jokes, query_weight
+        initial_top_jokes = self.get_sorted_jokes(query_weights)[:10]
+
+        return initial_top_jokes, query_weights
 
     def get_user_feedback(self, initial_top_jokes):
         query_joke_relevances = None
