@@ -99,11 +99,10 @@ class JokeEngineDriver:
         for term, weight in new_query_weights.items():
             new_query_weights[term] = alpha * weight
 
-
         seen_ids = set()
         for joke in initial_top_jokes:
             seen_ids.add(joke["joke_id"])
-            if joke["relevant"]:
+            if joke["is_relevant"]:
                 for key, value in joke["weights"].items():
                     if key in new_query_weights:
                         new_query_weights[key] += beta * value
@@ -116,18 +115,21 @@ class JokeEngineDriver:
                     else:
                         new_query_weights[key] = gamma * value
         
-
+        # Make sure all weights are non-negative
         for key, value in new_query_weights.items():
              new_query_weights[key] = max(0, value)
 
-
         # Use new query to get new top jokes
         updated_top_jokes = None
+        jokes_by_sim_scores = self.get_sorted_jokes(new_query_weights)
 
+        # Only return jokes that haven't been seen before
+        for joke in jokes_by_sim_scores:
+            if joke["joke_id"] not in seen_ids:
+                updated_top_jokes.append(joke)
+            if len(updated_top_jokes) == 10:
+                break
 
-
-
-    
         return updated_top_jokes
 
     def display_updated_top_jokes(self, updated_top_jokes):
