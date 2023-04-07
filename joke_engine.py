@@ -96,7 +96,7 @@ class JokeEngineDriver:
 
             funniness_score = int(input("How funny was this joke? Rate on a scale of 1 to 5: "))
             while funniness_score > 5 or funniness_score < 1:
-                funniness_score = input("Please enter a rating between 1 to 5: ")
+                funniness_score = int(input("Please enter a rating between 1 to 5: "))
 
             old_funniness_score = self.inverted_index[joke["joke_id"]]["funniness_score"]
             funniness_updates = self.inverted_index[joke["joke_id"]]["funniness_updates"]
@@ -112,8 +112,6 @@ class JokeEngineDriver:
         # initial_top_jokes is a list of joke objects which each contain whether the joke
         # was marked relevant or irrelevant by the user, the joke's id, and the joke's term weights
         # query_weights is a dictionary of the query's term weights
-
-        updated_top_jokes = None
 
         alpha = 1
         beta = 1
@@ -144,7 +142,7 @@ class JokeEngineDriver:
              new_query_weights[key] = max(0, value)
 
         # Use new query to get new top jokes
-        updated_top_jokes = None
+        updated_top_jokes = []
         jokes_by_sim_scores = self.get_sorted_jokes(new_query_weights)
 
         # Only return jokes that haven't been seen before
@@ -157,8 +155,10 @@ class JokeEngineDriver:
         return updated_top_jokes
 
     def display_updated_top_jokes(self, updated_top_jokes):
-        for joke in updated_top_jokes:
-            print(joke["text"])
+        for i in range(len(updated_top_jokes)):
+            joke = updated_top_jokes[i]
+            print(str(i+1) + ". " + joke["text"])
+            print("\n")
         return
 
 
