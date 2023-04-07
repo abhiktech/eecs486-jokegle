@@ -19,12 +19,13 @@ class JokeEngineDriver:
             initial_top_jokes, query_weight = self.get_initial_top_jokes(query_tokens)
 
             print("Here are your initial top jokes")
+            print()
 
             query_joke_relevances = self.get_user_feedback(initial_top_jokes)
 
-            updated_top_jokes = self.get_updated_top_jokes(initial_top_jokes, query_weight, query_joke_relevances)
+            # updated_top_jokes = self.get_updated_top_jokes(initial_top_jokes, query_weight, query_joke_relevances)
 
-            self.display_updated_top_jokes(updated_top_jokes)
+            # self.display_updated_top_jokes(updated_top_jokes)
 
             is_running = input("Search for more jokes? yes or no: ") != "no"
 
@@ -79,18 +80,31 @@ class JokeEngineDriver:
                 idf = math.log(N, 2)
             query_weights[token] = (0.5 + (0.5 * tfs[token]) / max_tf) * idf
 
-        initial_top_jokes = self.get_sorted_jokes(query_weights)[:10]
+        initial_top_jokes = self.get_sorted_jokes(query_weights)[:5]
 
         return initial_top_jokes, query_weights
 
     def get_user_feedback(self, initial_top_jokes):
-        query_joke_relevances = None
-        
-        for joke in initial_top_jokes:
+        for i, joke in enumerate(initial_top_jokes):
             print(joke['text'])
-            relev_score = int(input("How relevant was this joke? "))
-            funny_score = int(input("How funny was this joke? "))
-        return query_joke_relevances
+            
+            relevance_score = input("Is this joke relevant? yes or no: ")
+            while relevance_score not in ("yes", "no"):
+                relevance_score = input("Please enter 'yes' or 'no': ")
+
+            funniness_score = int(input("How funny was this joke? Rate on a scale of 1 to 5: "))
+            while funniness_score > 5 or funniness_score < 1:
+                funniness_score = input("Please enter a rating between 1 to 5: ")
+
+            old_funniness_score = self.inverted_index[joke["joke_id"]]["funniness_score"]
+            funniness_updates = self.inverted_index[joke["joke_id"]]["funniness_updates"]
+
+            self.inverted_index[joke["joke_id"]]["funniness_score"] = (old_funniness_score * funniness_updates + funniness_score) / (funniness_updates + 1)
+            self.inverted_index[joke["joke_id"]]["funniness_updates"] += 1
+
+            initial_top_jokes[i]["is_relevant"] = relevance_score == 'yes'
+        
+        return initial_top_jokes
 
     def get_updated_top_jokes(self, initial_top_jokes, original_query_weights):
         # initial_top_jokes is a list of joke objects which each contain whether the joke
