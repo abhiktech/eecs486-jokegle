@@ -1,9 +1,10 @@
 from preprocess import preprocess
+import json
 
 class JokeEngineDriver:
 
     def __init__(self):
-        self.inverted_index = self.load_data_into_inverted_index()
+        self.inverted_index, self.term_idfs = self.load_data()
 
     def run(self):
         print("Welcome to Jokegle, a search engine where you can look for jokes!")
@@ -24,13 +25,31 @@ class JokeEngineDriver:
 
             is_running = input("Search for more jokes? yes or no: ") != "no"
 
-    def load_data_into_inverted_index(self):
-        inverted_index = None
-        return inverted_index
+    def load_data(self):
+        inverted_index = term_idfs = None
+        with open("joke_data.json", "r") as ii_file:
+            inverted_index = json.load(ii_file)
+        
+        with open("term_idfs.json", "r") as ti_file:
+            term_idfs = json.load(ti_file)
+        
+        print(inverted_index)
+        print(term_idfs)
+
+        return inverted_index, term_idfs
     
     def get_initial_top_jokes(self, query_tokens):
         initial_top_jokes = None
-        query_weight = None
+        query_weight = {}
+
+        
+
+        for token in query_tokens:
+            pass
+
+        
+
+
         return initial_top_jokes, query_weight
 
     def get_user_feedback(self, initial_top_jokes):
@@ -38,7 +57,11 @@ class JokeEngineDriver:
         return query_joke_relevances
 
     def get_updated_top_jokes(self, initial_top_jokes, query_weights, query_joke_relevances):
+        # 
         updated_top_jokes = None
+        
+
+        
         return updated_top_jokes
 
     def display_updated_top_jokes(self, updated_top_jokes):
