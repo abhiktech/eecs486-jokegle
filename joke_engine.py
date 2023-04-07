@@ -18,6 +18,8 @@ class JokeEngineDriver:
 
             initial_top_jokes, query_weight = self.get_initial_top_jokes(query_tokens)
 
+            print("Here are your initial top jokes")
+
             query_joke_relevances = self.get_user_feedback(initial_top_jokes)
 
             updated_top_jokes = self.get_updated_top_jokes(initial_top_jokes, query_weight, query_joke_relevances)
@@ -37,6 +39,7 @@ class JokeEngineDriver:
         return inverted_index, term_idfs
     
     def get_similarity_and_funniness_weighted_average(self, similarity_score, funniness_score):
+        # TODO: Make this much better
         return similarity_score * 2 + funniness_score
 
     def get_sorted_jokes(self, query_weights):
@@ -82,6 +85,11 @@ class JokeEngineDriver:
 
     def get_user_feedback(self, initial_top_jokes):
         query_joke_relevances = None
+        
+        for joke in initial_top_jokes:
+            print(joke['text'])
+            relev_score = int(input("How relevant was this joke? "))
+            funny_score = int(input("How funny was this joke? "))
         return query_joke_relevances
 
     def get_updated_top_jokes(self, initial_top_jokes, original_query_weights):
