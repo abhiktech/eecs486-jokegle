@@ -94,9 +94,15 @@ class JokeEngineDriver:
             while relevance_score not in ("yes", "no"):
                 relevance_score = input("Please enter 'yes' or 'no': ")
 
-            funniness_score = int(input("How funny was this joke? Rate on a scale of 1 to 5: "))
+            try:
+                funniness_score = int(input("How funny was this joke? Rate on a scale of 1 to 5: "))
+            except ValueError:
+                funniness_score = 0
             while funniness_score > 5 or funniness_score < 1:
-                funniness_score = int(input("Please enter a rating between 1 to 5: "))
+                try:
+                    funniness_score = int(input("Please enter a rating between 1 to 5: "))
+                except ValueError:
+                    pass
 
             old_funniness_score = self.inverted_index[joke["joke_id"]]["funniness_score"]
             funniness_updates = self.inverted_index[joke["joke_id"]]["funniness_updates"]
