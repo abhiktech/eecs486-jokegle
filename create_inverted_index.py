@@ -29,8 +29,7 @@ class InvertedIndex:
             joke_value = {}
             
             joke_value["joke_id"] = current_joke_id
-            
-
+    
             if "rating" not in joke:
                 joke_value["funniness_score"] = 3
             else:

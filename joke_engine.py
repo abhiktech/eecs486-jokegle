@@ -1,6 +1,7 @@
 from preprocess import preprocess
 import json
 import math
+import os
 
 class JokeEngineDriver:
 
@@ -13,11 +14,13 @@ class JokeEngineDriver:
         is_running = True
 
         while is_running:
-            query = input("Search for a jokes using keywords: ")
+            query = input("Search for jokes using keywords: ")
+            print()
             query_tokens = preprocess(query)
 
             initial_top_jokes, query_weight = self.get_initial_top_jokes(query_tokens)
 
+            print()
             print("Here are your initial top jokes")
             print()
 
@@ -25,11 +28,14 @@ class JokeEngineDriver:
 
             updated_top_jokes = self.get_updated_top_jokes(query_joke_relevances, query_weight)
 
+            print()
             print("Here are your updated top jokes")
             print()
             self.display_updated_top_jokes(updated_top_jokes)
 
             is_running = input("Search for more jokes? yes or no: ") != "no"
+
+        self.update_joke_data_json()
 
     def load_data(self):
         inverted_index = term_idfs = None
@@ -160,8 +166,12 @@ class JokeEngineDriver:
             print(str(i+1) + ". " + joke["text"])
             print("\n")
         return
-
-
+    
+    def update_joke_data_json(self):
+        os.remove('joke_data.json')
+        with open("joke_data.json", "w") as outfile:
+            json.dump(self.inverted_index, outfile)
+    
 def main():
     joke_engine = JokeEngineDriver()
     joke_engine.run()
