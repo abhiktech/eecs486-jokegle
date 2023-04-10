@@ -6,17 +6,26 @@ import os
 class JokeEngineDriver:
 
     def __init__(self):
-        self.inverted_index, self.term_idfs = self.load_data()
+        self.inverted_index, self.term_idfs, self.bad_words = self.load_data()
+        self.is_bad_word_filter_on = True
 
     def run(self):
         print("Welcome to Jokegle, a search engine where you can look for jokes!")
+        print()
+        
+        bad_word_filter_user_choice = input("Turn profanity filter on? yes or no: ")
+        while bad_word_filter_user_choice not in ("yes", "no"):
+            bad_word_filter_user_choice = input("Please enter 'yes' or 'no': ")
 
+        self.is_bad_word_filter_on = bad_word_filter_user_choice == 'yes'
+        
         is_running = True
 
         while is_running:
             query = input("Search for jokes using keywords: ")
             print()
             query_tokens = preprocess(query)
+
 
             initial_top_jokes, query_weight = self.get_initial_top_jokes(query_tokens)
 
@@ -34,6 +43,7 @@ class JokeEngineDriver:
             self.display_updated_top_jokes(updated_top_jokes)
 
             is_running = input("Search for more jokes? yes or no: ") != "no"
+            print()
 
         self.update_joke_data_json()
 
@@ -44,8 +54,18 @@ class JokeEngineDriver:
         
         with open("term_idfs.json", "r") as ti_file:
             term_idfs = json.load(ti_file)
+
+        bad_words = open("bad_words.txt", "r").readlines()
+        bad_words_preprocessed = []
         
-        return inverted_index, term_idfs
+        for bad_word in bad_words:
+            bad_word = bad_word.strip()
+            if ' ' not in bad_word:
+                result = preprocess(bad_word)
+                if len(result) == 1:
+                    bad_words_preprocessed.append(result[0])
+        
+        return inverted_index, term_idfs, bad_words_preprocessed
     
     def get_similarity_and_funniness_weighted_average(self, similarity_score, funniness_score):
         # TODO: Make this much better
@@ -88,7 +108,22 @@ class JokeEngineDriver:
                 idf = math.log(N, 2)
             query_weights[token] = (0.5 + (0.5 * tfs[token]) / max_tf) * idf
 
-        initial_top_jokes = self.get_sorted_jokes(query_weights)[:5]
+        sorted_jokes = self.get_sorted_jokes(query_weights)[:5]
+        initial_top_jokes = []
+
+        if self.is_bad_word_filter_on:
+            for joke in sorted_jokes:
+                bad_word_exists = False
+                for bad_word in self.bad_words:
+                    if bad_word in joke['preprocessed_tokens']:
+                        bad_word_exists = True
+                        break
+                if not bad_word_exists:
+                    initial_top_jokes.append(joke)
+                if len(initial_top_jokes) == 5:
+                    break
+        else:
+            initial_top_jokes = sorted_jokes[:5]
 
         return initial_top_jokes, query_weights
 
@@ -117,6 +152,8 @@ class JokeEngineDriver:
             self.inverted_index[joke["joke_id"]]["funniness_updates"] += 1
 
             initial_top_jokes[i]["is_relevant"] = relevance_score == 'yes'
+            
+            print()
         
         return initial_top_jokes
 
@@ -160,7 +197,16 @@ class JokeEngineDriver:
         # Only return jokes that haven't been seen before
         for joke in jokes_by_sim_scores:
             if joke["joke_id"] not in seen_ids:
-                updated_top_jokes.append(joke)
+                if self.is_bad_word_filter_on:
+                    bad_word_exists = False
+                    for bad_word in self.bad_words:
+                        if bad_word in joke["preprocessed_tokens"]:
+                            bad_word_exists = True
+                            break
+                    if not bad_word_exists:
+                        updated_top_jokes.append(joke)
+                else:
+                    updated_top_jokes.append(joke)
             if len(updated_top_jokes) == 10:
                 break
 
