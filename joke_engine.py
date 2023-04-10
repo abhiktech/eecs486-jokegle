@@ -113,7 +113,7 @@ class JokeEngineDriver:
                 idf = math.log(N, 2)
             query_weights[token] = (0.5 + (0.5 * tfs[token]) / max_tf) * idf
 
-        sorted_jokes = self.get_sorted_jokes(query_weights)[:5]
+        sorted_jokes = self.get_sorted_jokes(query_weights)
         initial_top_jokes = []
 
         if self.is_bad_word_filter_on:
