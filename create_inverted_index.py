@@ -14,7 +14,7 @@ class InvertedIndex:
     def read_dataset(self):
         """Imports the datasets from the GitHub repository."""
         dataset = []
-        for fname in ["jokes/stupidstuff.json", "jokes/wocka.json"]:
+        for fname in ["jokes/stupidstuff.json", "jokes/wocka.json", "shortjokes.json"]:
             with open(fname, "r") as file:
                 curr_file = json.loads(file.read())
                 dataset += curr_file
