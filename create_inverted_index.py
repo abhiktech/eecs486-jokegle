@@ -16,7 +16,7 @@ class InvertedIndex:
         """Imports the datasets from the GitHub repository."""
         dataset_rated = []
         dataset_unrated = []
-        for fname in ["jokes/stupidstuff.json", "jokes/wocka.json"]:
+        for fname in ["jokes/stupidstuff.json", "jokes/wocka.json", "jokes/shortjokes.json"]:
             with open(fname, "r") as file:
                 curr_file = json.loads(file.read())
                 if fname == "jokes/stupidstuff.json":
@@ -30,7 +30,6 @@ class InvertedIndex:
     def read_joke_data(self, dataset_rated, dataset_unrated):
         current_joke_id = 0
         
-
         jokes_train = []
         ratings_train = []
 
@@ -38,10 +37,7 @@ class InvertedIndex:
             joke_value = {}
             
             joke_value["joke_id"] = current_joke_id
-
-           
             joke_value["funniness_score"] = joke["rating"]
-
             joke_value["weights"] = {} # empty for now
             joke_value["funniness_updates"] = 1
             joke_value["text"] = joke['body']
@@ -58,44 +54,29 @@ class InvertedIndex:
         vocab_size, x_train, x_val, x_test, y_train, y_val, y_test, tokenizer =  predict_ratings.preprocess(jokes_train, ratings_train)
         model = predict_ratings.train(vocab_size, x_train, x_val, x_test, y_train, y_val, y_test)
         
-        jokes_predict= []
+        jokes_predict = []
 
         for joke in dataset_unrated:
             jokes_predict.append(joke['body'])
         
         ratings_predict = predict_ratings.predict(model, tokenizer, jokes_predict)
 
-        print(ratings_predict)
+        # print(ratings_predict)
 
-        with open('jokes/wocka.json', 'r') as file:
-            cur_file = json.loads(file.read())
-
-            for i in range(len(cur_file)):
-                data = cur_file[i]
-                data['rating'] = float(ratings_predict[i][0])
-                dataset_unrated[i]['rating'] = float(ratings_predict[i][0])
-
-                joke_value = {}
-            
-                joke_value["joke_id"] = current_joke_id
-
-            
-                joke_value["funniness_score"] = float(ratings_predict[i][0])
-
-                joke_value["weights"] = {} # empty for now
-                joke_value["funniness_updates"] = 1
-                joke_value["text"] = data['body']
-                joke_value["preprocessed_tokens"] = preprocess(joke_value["text"])
-
-                self.calculate_joke_term_frequency(joke_value["preprocessed_tokens"], current_joke_id)
-
-                current_joke_id += 1
-                self.jokes_data.append(joke_value)
-
-            new_json = json.dumps(cur_file)
-            with open("jokes/wocka_ratings.json", 'w+') as outfile:
-                outfile.write(new_json)
+        for i in range(len(jokes_predict)):
+            joke_value = {}
         
+            joke_value["joke_id"] = current_joke_id
+            joke_value["funniness_score"] = float(ratings_predict[i][0])
+            joke_value["weights"] = {} # empty for now
+            joke_value["funniness_updates"] = 1
+            joke_value["text"] = jokes_predict[i]
+            joke_value["preprocessed_tokens"] = preprocess(joke_value["text"])
+
+            self.calculate_joke_term_frequency(joke_value["preprocessed_tokens"], current_joke_id)
+
+            current_joke_id += 1
+            self.jokes_data.append(joke_value)
 
     def calculate_joke_term_frequency(self, joke_tokens, joke_id):
 
