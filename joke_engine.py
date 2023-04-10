@@ -67,13 +67,16 @@ class JokeEngineDriver:
         
         return inverted_index, term_idfs, bad_words_preprocessed
     
-    def get_similarity_and_funniness_weighted_average(self, similarity_score, funniness_score):
+    def get_similarity_and_funniness_weighted_average(self, similarity_score, funniness_score, max_similarity_score):
         # TODO: Make this much better
-        return similarity_score * 2 + funniness_score
+        similarity_score_weight = 0.8
+        funniness_score_weight = 1 - similarity_score_weight
+        return similarity_score_weight * similarity_score / max_similarity_score + funniness_score_weight * (funniness_score - 1) / 4
 
     def get_sorted_jokes(self, query_weights):
         jokes = self.inverted_index[:]
 
+        max_similarity_score = 0
         for i, joke in enumerate(jokes):
             similarity_score = 0
 
@@ -82,9 +85,11 @@ class JokeEngineDriver:
                     similarity_score += joke["weights"][term] * weight
 
             jokes[i]["similarity_score"] = similarity_score
+            if similarity_score > max_similarity_score:
+                max_similarity_score = similarity_score
 
-        jokes = sorted(jokes, reverse=True, key=lambda v: self.get_similarity_and_funniness_weighted_average(v["similarity_score"], v["funniness_score"]))
-        
+        jokes = sorted(jokes, reverse=True, key=lambda v: self.get_similarity_and_funniness_weighted_average(v["similarity_score"], v["funniness_score"], max_similarity_score))
+
         return jokes
 
     def get_initial_top_jokes(self, query_tokens):
@@ -131,7 +136,7 @@ class JokeEngineDriver:
         for i, joke in enumerate(initial_top_jokes):
             print(joke['text'])
             
-            relevance_score = input("Is this joke relevant? yes or no: ")
+            relevance_score = input("Is this a good joke? yes or no: ")
             while relevance_score not in ("yes", "no"):
                 relevance_score = input("Please enter 'yes' or 'no': ")
 
@@ -184,7 +189,7 @@ class JokeEngineDriver:
                     if key in new_query_weights:
                         new_query_weights[key] -= gamma * value
                     else:
-                        new_query_weights[key] = gamma * value
+                        new_query_weights[key] = -gamma * value
         
         # Make sure all weights are non-negative
         for key, value in new_query_weights.items():
@@ -194,9 +199,21 @@ class JokeEngineDriver:
         updated_top_jokes = []
         jokes_by_sim_scores = self.get_sorted_jokes(new_query_weights)
 
+        combined_jokes = updated_top_jokes + initial_top_jokes
+
         # Only return jokes that haven't been seen before
         for joke in jokes_by_sim_scores:
-            if joke["joke_id"] not in seen_ids:
+            is_duplicate = False
+            for updated_joke in combined_jokes:
+                jokes_list = set(joke['weights'].keys())
+                updated_jokes_list = set(updated_joke['weights'].keys())
+                intersection = len(list(jokes_list.intersection(updated_jokes_list)))
+                union = (len(joke['weights'].keys()) + len(updated_joke['weights'].keys())) - intersection
+                jaccard_sim = float(intersection) / union
+                if jaccard_sim > 0.5:
+                    is_duplicate = True
+
+            if joke["joke_id"] not in seen_ids and not is_duplicate:
                 if self.is_bad_word_filter_on:
                     bad_word_exists = False
                     for bad_word in self.bad_words:
@@ -207,6 +224,7 @@ class JokeEngineDriver:
                         updated_top_jokes.append(joke)
                 else:
                     updated_top_jokes.append(joke)
+
             if len(updated_top_jokes) == 10:
                 break
 
@@ -220,9 +238,10 @@ class JokeEngineDriver:
         return
     
     def update_joke_data_json(self):
-        os.remove('joke_data.json')
-        with open("joke_data.json", "w") as outfile:
-            json.dump(self.inverted_index, outfile)
+        # os.remove('joke_data.json')
+        # with open("joke_data.json", "w") as outfile:
+        #     json.dump(self.inverted_index, outfile)
+        pass
     
 def main():
     joke_engine = JokeEngineDriver()
