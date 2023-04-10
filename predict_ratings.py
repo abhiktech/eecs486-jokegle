@@ -8,6 +8,9 @@ from keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 
+def custom_activation(x):
+    return tf.math.sigmoid(x) * 4 + 1
+
 def train(vocab_size, x_train, x_val, x_test, y_train, y_val, y_test):
     # Define the input shape
     input_shape = (100,)  # This assumes that the input sequence is 100 tokens long
@@ -29,7 +32,7 @@ def train(vocab_size, x_train, x_val, x_test, y_train, y_val, y_test):
     flatten = Flatten()(pool1)
 
     # Define the output layer
-    output = Dense(1)(flatten)
+    output = Dense(1, activation=custom_activation)(flatten)
 
     # Define the model
     model = Model(inputs=inputs, outputs=output)
