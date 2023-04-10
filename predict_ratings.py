@@ -48,7 +48,7 @@ def train(vocab_size, x_train, x_val, x_test, y_train, y_val, y_test):
 
     return model
 
-def predict(model, tokenizer):
+def predict_old(model, tokenizer):
     jokes = []
     with open('jokes/wocka.json', 'r') as file:
         cur_file = json.loads(file.read())
@@ -67,6 +67,40 @@ def predict(model, tokenizer):
         with open("jokes/wocka_ratings.json", 'w+') as outfile:
             outfile.write(new_json)
 
+def predict(model, tokenizer, jokes):
+    jokes_seq = tokenizer.texts_to_sequences(jokes)
+    jokes_seq_padded = pad_sequences(jokes_seq, maxlen=100, padding='post', truncating='post')
+    predicted_ratings = model.predict(jokes_seq_padded)
+
+    return predicted_ratings
+
+def preprocess(jokes, ratings):
+
+    data_size = len(jokes)
+    train_size = int(data_size * 0.6)
+    val_size = int(data_size * 0.2)
+
+    jokes_train = jokes[:train_size]
+    jokes_val = jokes[train_size:train_size + val_size]
+    jokes_test = jokes[train_size + val_size:]
+
+    y_train = np.asarray(ratings[:train_size])
+    y_val = np.asarray(ratings[train_size:train_size + val_size])
+    y_test = np.asarray(ratings[train_size + val_size:])
+
+    tokenizer = Tokenizer()
+    tokenizer.fit_on_texts(jokes)
+    vocab_size = len(tokenizer.word_index) + 1
+
+    jokes_train_seq = tokenizer.texts_to_sequences(jokes_train)
+    x_train = pad_sequences(jokes_train_seq, maxlen=100, padding='post', truncating='post')
+    jokes_val_seq = tokenizer.texts_to_sequences(jokes_val)
+    x_val = pad_sequences(jokes_val_seq, maxlen=100, padding='post', truncating='post')
+    jokes_test_seq = tokenizer.texts_to_sequences(jokes_test)
+    x_test = pad_sequences(jokes_test_seq, maxlen=100, padding='post', truncating='post')
+
+    return vocab_size, x_train, x_val, x_test, y_train, y_val, y_test, tokenizer
+    
 if __name__ == "__main__":
     jokes = []
     ratings = []
@@ -101,4 +135,4 @@ if __name__ == "__main__":
 
     model = train(vocab_size, x_train, x_val, x_test, y_train, y_val, y_test)
 
-    predict(model, tokenizer)
+    predict_old(model, tokenizer)
