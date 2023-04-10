@@ -75,6 +75,23 @@ class InvertedIndex:
                 data['rating'] = float(ratings_predict[i][0])
                 dataset_unrated[i]['rating'] = float(ratings_predict[i][0])
 
+                joke_value = {}
+            
+                joke_value["joke_id"] = current_joke_id
+
+            
+                joke_value["funniness_score"] = float(ratings_predict[i][0])
+
+                joke_value["weights"] = {} # empty for now
+                joke_value["funniness_updates"] = 1
+                joke_value["text"] = data['body']
+                joke_value["preprocessed_tokens"] = preprocess(joke_value["text"])
+
+                self.calculate_joke_term_frequency(joke_value["preprocessed_tokens"], current_joke_id)
+
+                current_joke_id += 1
+                self.jokes_data.append(joke_value)
+
             new_json = json.dumps(cur_file)
             with open("jokes/wocka_ratings.json", 'w+') as outfile:
                 outfile.write(new_json)
