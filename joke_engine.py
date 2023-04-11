@@ -35,11 +35,11 @@ class JokeEngineDriver:
 
             query_joke_relevances = self.get_user_feedback(initial_top_jokes)
 
-            updated_top_jokes = self.get_updated_top_jokes(query_joke_relevances, query_weight)
-
             print()
             print("Here are your updated top jokes")
             print()
+            updated_top_jokes = self.get_updated_top_jokes(query_joke_relevances, query_weight)
+
             self.display_updated_top_jokes(updated_top_jokes)
 
             is_running = input("Search for more jokes? yes or no: ") != "no"
@@ -130,7 +130,7 @@ class JokeEngineDriver:
                 intersection = len(list(jokes_list.intersection(updated_jokes_list)))
                 union = (len(joke['weights'].keys()) + len(updated_joke['weights'].keys())) - intersection
                 jaccard_sim = float(intersection) / union
-                if jaccard_sim > 0.1:
+                if jaccard_sim > 0.5:
                     is_duplicate = True
                     break
             
@@ -231,7 +231,7 @@ class JokeEngineDriver:
                 intersection = len(list(jokes_list.intersection(updated_jokes_list)))
                 union = (len(joke['weights'].keys()) + len(updated_joke['weights'].keys())) - intersection
                 jaccard_sim = float(intersection) / union
-                if jaccard_sim > 0.1:
+                if jaccard_sim > 0.5:
                     is_duplicate = True
                     break
 
@@ -246,8 +246,10 @@ class JokeEngineDriver:
                         break
                 if not bad_word_exists:
                     updated_top_jokes.append(joke)
+                    combined_jokes.append(joke)
             else:
                 updated_top_jokes.append(joke)
+                combined_jokes.append(joke)
 
             if len(updated_top_jokes) == 10:
                 break
