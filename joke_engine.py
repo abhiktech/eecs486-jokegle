@@ -12,16 +12,16 @@ class JokeEngineDriver:
     def run(self):
         print("Welcome to Jokegle, a search engine where you can look for jokes!")
         print()
-        
-        bad_word_filter_user_choice = input("Turn profanity filter on? yes or no: ")
-        while bad_word_filter_user_choice not in ("yes", "no"):
-            bad_word_filter_user_choice = input("Please enter 'yes' or 'no': ")
-
-        self.is_bad_word_filter_on = bad_word_filter_user_choice == 'yes'
-        
+                
         is_running = True
 
         while is_running:
+            bad_word_filter_user_choice = input("Turn profanity filter on? yes or no: ")
+            while bad_word_filter_user_choice not in ("yes", "no"):
+                bad_word_filter_user_choice = input("Please enter 'yes' or 'no': ")
+    
+            self.is_bad_word_filter_on = bad_word_filter_user_choice == 'yes'
+
             query = input("Search for jokes using keywords: ")
             print()
             query_tokens = preprocess(query)
@@ -122,19 +122,34 @@ class JokeEngineDriver:
         sorted_jokes = self.get_sorted_jokes(query_weights)
         initial_top_jokes = []
 
-        if self.is_bad_word_filter_on:
-            for joke in sorted_jokes:
+        for joke in sorted_jokes:
+            is_duplicate = False
+            for updated_joke in initial_top_jokes:
+                jokes_list = set(joke['weights'].keys())
+                updated_jokes_list = set(updated_joke['weights'].keys())
+                intersection = len(list(jokes_list.intersection(updated_jokes_list)))
+                union = (len(joke['weights'].keys()) + len(updated_joke['weights'].keys())) - intersection
+                jaccard_sim = float(intersection) / union
+                if jaccard_sim > 0.1:
+                    is_duplicate = True
+                    break
+            
+            if is_duplicate:
+                continue
+
+            if self.is_bad_word_filter_on:
                 bad_word_exists = False
                 for bad_word in self.bad_words:
-                    if bad_word in joke['preprocessed_tokens']:
+                    if bad_word in joke["preprocessed_tokens"]:
                         bad_word_exists = True
                         break
                 if not bad_word_exists:
                     initial_top_jokes.append(joke)
-                if len(initial_top_jokes) == num_jokes:
-                    break
-        else:
-            initial_top_jokes = sorted_jokes[:num_jokes]
+            else:
+                initial_top_jokes.append(joke)
+
+            if len(initial_top_jokes) == num_jokes:
+                break
 
         return initial_top_jokes, query_weights
 
@@ -216,20 +231,23 @@ class JokeEngineDriver:
                 intersection = len(list(jokes_list.intersection(updated_jokes_list)))
                 union = (len(joke['weights'].keys()) + len(updated_joke['weights'].keys())) - intersection
                 jaccard_sim = float(intersection) / union
-                if jaccard_sim > 0.5:
+                if jaccard_sim > 0.1:
                     is_duplicate = True
+                    break
 
-            if joke["joke_id"] not in seen_ids and not is_duplicate:
-                if self.is_bad_word_filter_on:
-                    bad_word_exists = False
-                    for bad_word in self.bad_words:
-                        if bad_word in joke["preprocessed_tokens"]:
-                            bad_word_exists = True
-                            break
-                    if not bad_word_exists:
-                        updated_top_jokes.append(joke)
-                else:
+            if is_duplicate or joke["joke_id"] in seen_ids:
+                continue
+
+            if self.is_bad_word_filter_on:
+                bad_word_exists = False
+                for bad_word in self.bad_words:
+                    if bad_word in joke["preprocessed_tokens"]:
+                        bad_word_exists = True
+                        break
+                if not bad_word_exists:
                     updated_top_jokes.append(joke)
+            else:
+                updated_top_jokes.append(joke)
 
             if len(updated_top_jokes) == 10:
                 break
