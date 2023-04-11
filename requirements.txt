@@ -2,3 +2,5 @@ nltk
 numpy
 tensorflow
 keras
+matplotlib
+tkinter

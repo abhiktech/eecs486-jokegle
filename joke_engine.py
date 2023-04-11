@@ -7,7 +7,7 @@ class JokeEngineDriver:
 
     def __init__(self):
         self.inverted_index, self.term_idfs, self.bad_words = self.load_data()
-        self.is_bad_word_filter_on = True
+        self.is_bad_word_filter_on = False
 
     def run(self):
         print("Welcome to Jokegle, a search engine where you can look for jokes!")
@@ -27,7 +27,7 @@ class JokeEngineDriver:
             query_tokens = preprocess(query)
 
 
-            initial_top_jokes, query_weight = self.get_initial_top_jokes(query_tokens)
+            initial_top_jokes, query_weight = self.get_initial_top_jokes(query_tokens, 5)
 
             print()
             print("Here are your initial top jokes")
@@ -73,9 +73,7 @@ class JokeEngineDriver:
         funniness_score_weight = 1 - similarity_score_weight
         return similarity_score_weight * similarity_score / max_similarity_score + funniness_score_weight * (funniness_score - 1) / 4
 
-    def get_sorted_jokes(self, query_weights):
-        jokes = self.inverted_index[:]
-
+    def compute_similarity_scores(self, query_weights, jokes):
         max_similarity_score = 0
         for i, joke in enumerate(jokes):
             similarity_score = 0
@@ -88,12 +86,15 @@ class JokeEngineDriver:
             if similarity_score > max_similarity_score:
                 max_similarity_score = similarity_score
 
-        jokes = sorted(jokes, reverse=True, key=lambda v: self.get_similarity_and_funniness_weighted_average(v["similarity_score"], v["funniness_score"], max_similarity_score))
+        return jokes, max_similarity_score
 
+    def get_sorted_jokes(self, query_weights):
+        jokes = self.inverted_index[:]
+        jokes, max_similarity_score = self.compute_similarity_scores(query_weights, jokes)
+        jokes = sorted(jokes, reverse=True, key=lambda v: self.get_similarity_and_funniness_weighted_average(v["similarity_score"], v["funniness_score"], max_similarity_score))
         return jokes
 
-    def get_initial_top_jokes(self, query_tokens):
-        initial_top_jokes = None
+    def get_query_weights(self, query_tokens):
         query_weights = {}
         
         # Compute max tf
@@ -113,6 +114,11 @@ class JokeEngineDriver:
                 idf = math.log(N, 2)
             query_weights[token] = (0.5 + (0.5 * tfs[token]) / max_tf) * idf
 
+        return query_weights
+
+    def get_initial_top_jokes(self, query_tokens, num_jokes):
+        initial_top_jokes = None
+        query_weights = self.get_query_weights(query_tokens)
         sorted_jokes = self.get_sorted_jokes(query_weights)
         initial_top_jokes = []
 
@@ -125,10 +131,10 @@ class JokeEngineDriver:
                         break
                 if not bad_word_exists:
                     initial_top_jokes.append(joke)
-                if len(initial_top_jokes) == 5:
+                if len(initial_top_jokes) == num_jokes:
                     break
         else:
-            initial_top_jokes = sorted_jokes[:5]
+            initial_top_jokes = sorted_jokes[:num_jokes]
 
         return initial_top_jokes, query_weights
 
