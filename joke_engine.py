@@ -117,7 +117,6 @@ class JokeEngineDriver:
         return query_weights
 
     def get_initial_top_jokes(self, query_tokens, num_jokes):
-        initial_top_jokes = None
         query_weights = self.get_query_weights(query_tokens)
         sorted_jokes = self.get_sorted_jokes(query_weights)
         initial_top_jokes = []
