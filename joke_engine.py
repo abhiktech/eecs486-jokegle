@@ -262,9 +262,9 @@ class JokeEngineDriver:
         return
     
     def update_joke_data_json(self):
-        # os.remove('joke_data.json')
-        # with open("joke_data.json", "w") as outfile:
-        #     json.dump(self.inverted_index, outfile)
+        os.remove('joke_data.json')
+        with open("joke_data.json", "w") as outfile:
+            json.dump(self.inverted_index, outfile)
         pass
     
 def main():
