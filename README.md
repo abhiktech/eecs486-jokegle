@@ -1,10 +1,10 @@
-#Jokegle
+# Jokegle
 
-Jokegle is a search engine with a bank of over 220k jokes. Jokegle uses a vector space model, relevance feedback, and query reformulation to produce top 10 jokes for a query given by a user.
+Jokegle is a search engine with a bank of over 250k jokes. Jokegle uses a vector space model, relevance feedback, and query reformulation to produce top jokes for a query given by a user.
 
 
 
-###Usage
+### Usage
 1. To run a local instance of Jokegle, clone the repository and create a virtual environment and install the requirements
     ```
     python -m venv 
