@@ -194,6 +194,18 @@ class JokeEngineDriver:
         for term, weight in new_query_weights.items():
             new_query_weights[term] = alpha * weight
 
+        num_relevant = 0
+        num_irrelevant = 0
+
+        for joke in initial_top_jokes:
+            if joke["is_relevant"]:
+                num_relevant += 1
+            else:
+                num_irrelevant += 1
+
+        beta = float(beta)/float(num_relevant)
+        gamma = float(gamma) / float(num_irrelevant)
+
         seen_ids = set()
         for joke in initial_top_jokes:
             seen_ids.add(joke["joke_id"])
