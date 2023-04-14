@@ -68,6 +68,8 @@ class JokeEngineDriver:
         return inverted_index, term_idfs, bad_words_preprocessed
     
     def get_similarity_and_funniness_weighted_average(self, similarity_score, funniness_score, max_similarity_score):
+        if max_similarity_score == 0:
+            max_similarity_score = 1
         similarity_score_weight = 0.8
         funniness_score_weight = 1 - similarity_score_weight
         return similarity_score_weight * similarity_score / max_similarity_score + funniness_score_weight * (funniness_score - 1) / 4
