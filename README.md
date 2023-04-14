@@ -7,18 +7,22 @@ Jokegle is a search engine with a bank of over 250k jokes. Jokegle uses a vector
 ### Usage
 1. To run a local instance of Jokegle, clone the repository and create a virtual environment and install the requirements
     ```
-    python -m venv 
+    python3 -m venv 
     source venv/bin/activate
     pip install -r requirements.txt
     ```
+2. This application uses the ``nltk`` library for help with tokenization, stopword removal, and stemming of text. Downloading the necessary data for the library can be done by running:
+    ```
+    python3 download.py
+    ```
 
-2. The json files containing the datasets are found in the ``jokes/`` directory. To create the inverted index and calculate idfs for terms, run
+3. The json files containing the datasets are found in the ``jokes/`` directory. To create the inverted index and calculate idfs for terms, run
     ```
     python3 create_inverted_index.py
     ```
     Two new files should appear called ``joke_data.json`` and ``term_idfs.json``.
 
-3. To run the search engine application, 
+4. To run the search engine application, 
     ```
     python3 joke_engine.py
     ```
