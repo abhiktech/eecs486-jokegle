@@ -7,8 +7,8 @@ Jokegle is a search engine with a bank of over 250k jokes. Jokegle uses a vector
 ### Usage
 1. To run a local instance of Jokegle, clone the repository and create a virtual environment and install the requirements
     ```
-    python3 -m venv 
-    source venv/bin/activate
+    python3 -m venv env
+    source env/bin/activate
     pip install -r requirements.txt
     ```
 2. This application uses the ``nltk`` library for help with tokenization, stopword removal, and stemming of text. Downloading the necessary data for the library can be done by running:
